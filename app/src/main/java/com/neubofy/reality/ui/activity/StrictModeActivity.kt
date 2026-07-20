@@ -95,7 +95,7 @@ class StrictModeActivity : BaseActivity() {
         binding.switchAppLimitLock.isChecked = strictData.isAppLimitLocked
         binding.switchGroupLimitLock.isChecked = strictData.isGroupLimitLocked
         binding.switchScheduleLock.isChecked = strictData.isScheduleLocked
-        binding.switchTapasyaLock.isChecked = strictData.isTapasyaLocked
+        // removed
 
         binding.switchAutoDndLock.isChecked = strictData.isAutoDndLocked
         binding.switchCalendarLock.isChecked = strictData.isCalendarLocked
@@ -253,7 +253,7 @@ class StrictModeActivity : BaseActivity() {
             binding.switchAppLimitLock to { v: Boolean -> strictData.isAppLimitLocked = v },
             binding.switchGroupLimitLock to { v: Boolean -> strictData.isGroupLimitLocked = v },
             binding.switchScheduleLock to { v: Boolean -> strictData.isScheduleLocked = v },
-            binding.switchTapasyaLock to { v: Boolean -> strictData.isTapasyaLocked = v },
+
 
             binding.switchAutoDndLock to { v: Boolean -> strictData.isAutoDndLocked = v },
             binding.switchCalendarLock to { v: Boolean -> strictData.isCalendarLocked = v },

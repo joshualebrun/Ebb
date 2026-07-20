@@ -1,0 +1,81 @@
+name: Build Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'app/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Extract Version Name
+        id: version
+        run: |
+          VERSION_NAME=$(grep -E 'versionName\s*=\s*".*"' app/build.gradle.kts | sed -E 's/.*versionName\s*=\s*"([^"]+)".*/\1/')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION_NAME"
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK to Artifacts (Output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ebb-APK
+          path: app/build_v4/outputs/apk/debug/*.apk
+
+      - name: Create Release & Upload APK
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APK_PATH=$(find app/build_v4/outputs/apk/debug -name "*.apk" | head -n 1)
+          echo "Found APK at $APK_PATH"
+          
+          TARGET_TAG="v${VERSION_NAME}-debug"
+          echo "Target tag: $TARGET_TAG"
+          
+          if gh release view "$TARGET_TAG" >/dev/null 2>&1; then
+            echo "Checking existing APK assets in release $TARGET_TAG..."
+            gh release view "$TARGET_TAG" --json assets --jq '.assets[] | select(.name | endswith(".apk")) | "\(.name) \(.downloadCount)"' | while read -r name count; do
+              if [ -n "$name" ]; then
+                echo "Found existing APK asset: $name with download count: $count"
+                if [ "$count" -lt 5 ]; then
+                  echo "Download count is less than 5. Deleting $name..."
+                  gh release delete-asset "$TARGET_TAG" "$name" -y
+                else
+                  echo "Download count is $count (5 or more). Keeping $name."
+                fi
+              fi
+            done
+            echo "Uploading new APK to $TARGET_TAG..."
+            gh release upload "$TARGET_TAG" "$APK_PATH"
+          else
+            echo "Release $TARGET_TAG does not exist. Creating..."
+            gh release create "$TARGET_TAG" "$APK_PATH" \
+              --title "Debug Build $TARGET_TAG" \
+              --notes "Automated debug build via GitHub Actions." \
+              --prerelease
+          fi

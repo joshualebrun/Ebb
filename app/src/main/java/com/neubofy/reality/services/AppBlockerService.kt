@@ -64,9 +64,7 @@ class AppBlockerService : BaseBlockingService() {
     @Volatile private var lastBlockedPackage: String = ""
     @Volatile private var lastBlockTime: Long = 0L
     
-    // Settings Page Learning Manager
-    private val settingsLearningManager by lazy { SettingsLearningManager(this) }
-    
+    // Removed learning manager
     // === SETTINGS PAGE LEARNING ===
     
     var lastWindowClassName: String = ""
@@ -94,31 +92,7 @@ class AppBlockerService : BaseBlockingService() {
                         }
                     }
                 }
-                INTENT_ACTION_START_LEARNING -> {
-                    val pageTypeName = intent.getStringExtra(EXTRA_PAGE_TYPE)
-                    if (pageTypeName != null) {
-                        try {
-                            settingsLearningManager.currentLearningPageType = Constants.PageType.valueOf(pageTypeName)
-                            settingsLearningManager.isLearningMode = true
-                            settingsLearningManager.showLearnConfirmOverlay()
-                            com.neubofy.reality.utils.TerminalLogger.log("LEARN: Started for $pageTypeName")
-                        } catch (e: Exception) {
-                            com.neubofy.reality.utils.TerminalLogger.log("LEARN: Invalid page type - $pageTypeName")
-                        }
-                    }
-                }
-                INTENT_ACTION_START_CUSTOM_PAGE_LEARNING -> {
-                    val customName = intent.getStringExtra("custom_name") ?: "Custom Page"
-                    settingsLearningManager.currentCustomPageName = customName
-                    settingsLearningManager.currentLearningPageType = null
-                    settingsLearningManager.isLearningMode = true
-                    settingsLearningManager.isCustomPageLearning = true
-                    settingsLearningManager.showLearnConfirmOverlay()
-                    com.neubofy.reality.utils.TerminalLogger.log("LEARN CUSTOM PAGE: Started - $customName")
-                }
-                INTENT_ACTION_STOP_LEARNING -> {
-                    settingsLearningManager.stopLearning()
-                }
+
                 Intent.ACTION_SCREEN_OFF -> {
                     isScreenOn = false
                     browserWatchdog.stopBrowserCheckTimer() // Save battery when screen off
@@ -134,7 +108,7 @@ class AppBlockerService : BaseBlockingService() {
                     
                     // Full settings refresh on unlock - ensures schedules are loaded and evaluated immediately
                     refreshSettings()
-                    com.neubofy.reality.utils.SmartScheduleManager.scheduleNextTransition(applicationContext)
+                    // removed
                     
                     // Resume checking if needed
                     if (browserWatchdog.isWebsiteBlockActive()) {
@@ -182,7 +156,7 @@ class AppBlockerService : BaseBlockingService() {
         // 2. High-Frequency Event Dropping for Non-Target Apps
         // If it's not a settings app and not a browser, we only need to monitor app switching (TYPE_WINDOW_STATE_CHANGED).
         // This drops 99% of scrolling/typing events in regular apps (WhatsApp, Instagram, etc.) with zero overhead.
-        if (!settingsLearningManager.isLearningMode && !isSettingsPackage && !isBrowser) {
+        if (!isSettingsPackage && !isBrowser) {
             if (eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
                 return
             }
@@ -205,7 +179,7 @@ class AppBlockerService : BaseBlockingService() {
             
             // === EARLY EXIT: Skip if no protection is active ===
             // This is the key optimization - don't do ANY work unless protection is ON
-            if (isSettingsPackage && isNewPage && !settingsLearningManager.isLearningMode && 
+            if (isSettingsPackage && isNewPage && 
                 com.neubofy.reality.utils.SettingsBox.isAnyProtectionActive()) {
                 lastSettingsContentHash = "" // Reset content hash for new page
                 settingsProtectionManager.scheduleSettingsProtectionCheck(className, packageName)
@@ -216,10 +190,7 @@ class AppBlockerService : BaseBlockingService() {
                 com.neubofy.reality.utils.TerminalLogger.log("SETTINGS: ${className.substringAfterLast(".")}")
             }
             
-            // Update learning overlay when user navigates
-            if (settingsLearningManager.isLearningMode && settingsLearningManager.learnOverlay != null) {
-                handler.post { settingsLearningManager.updateLearnOverlayText() }
-            }
+
         }
         
         // === CONTENT CHANGED: Catches SubSettings→SubSettings navigation ===
@@ -227,7 +198,7 @@ class AppBlockerService : BaseBlockingService() {
         // TYPE_WINDOW_STATE_CHANGED doesn't fire with a new className.
         // But TYPE_WINDOW_CONTENT_CHANGED fires when the content updates.
         if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            if (isSettingsPackage && !settingsLearningManager.isLearningMode && 
+            if (isSettingsPackage && 
                 com.neubofy.reality.utils.SettingsBox.isAnyProtectionActive()) {
                 // Debounce: max once per 500ms
                 val now = System.currentTimeMillis()
@@ -436,18 +407,7 @@ class AppBlockerService : BaseBlockingService() {
     // toggleGrayscale REMOVED - feature requires ADB
 
     private fun startUsageTracker() {
-        try {
-            val workRequest = androidx.work.PeriodicWorkRequestBuilder<com.neubofy.reality.workers.UsageTrackerWorker>(
-                15, java.util.concurrent.TimeUnit.MINUTES
-            ).build()
-            androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                "UsageTrackerWorker",
-                androidx.work.ExistingPeriodicWorkPolicy.KEEP,
-                workRequest
-            )
-        } catch (e: Exception) {
-            com.neubofy.reality.utils.TerminalLogger.log("TRACKER START ERROR: ${e.message}")
-        }
+        // removed
     }
 
     private fun stopUsageTracker() {
@@ -684,14 +644,7 @@ class AppBlockerService : BaseBlockingService() {
                     
                     val isAnyModeActive = com.neubofy.reality.utils.BlockCache.isAnyBlockingModeActive
                     
-                    // === NOTIFICATION MANAGEMENT ===
-                    if (isAnyModeActive) {
-                        // Focus/Schedule/Bedtime is running - show notification timer
-                        // Timer is already managed elsewhere, but we ensure it's running
-                    } else {
-                        // No blocking mode active - stop notification timer
-                        com.neubofy.reality.utils.NotificationTimerManager(this@AppBlockerService).stopTimer()
-                    }
+
                     
                     // === DND & SLEEP MODE SYNC (Delegated to SystemStateManager) ===
                     systemStateManager.syncDndState(isAnyModeActive)
@@ -775,9 +728,7 @@ class AppBlockerService : BaseBlockingService() {
         try {
             removeStrictOverlay()
         } catch (e: Exception) {}
-        try {
-            settingsLearningManager.removeLearnOverlay()
-        } catch (e: Exception) {}
+
         try {
             settingsProtectionManager.removePenaltyOverlay()
         } catch (e: Exception) {}

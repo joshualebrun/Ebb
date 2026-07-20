@@ -65,7 +65,7 @@ class AllAppsFragment : Fragment() {
                 
                 // Get usage stats from system (like Digital Wellbeing)
                 // Get accurate usage
-                val usageMap = com.neubofy.reality.utils.UsageUtils.getUsageSinceMidnight(context)
+                val usageMap = mapOf<String, Long>()
                 
                 // Load limits from DB
                 val db = AppDatabase.getDatabase(context)
@@ -118,7 +118,7 @@ class AllAppsFragment : Fragment() {
                 apps.sortByDescending { it.usedMs }
                 
                 // Get accurate total screen time (Screen On/Off events)
-                val totalScreenTimeDb = com.neubofy.reality.utils.UsageUtils.getScreenTimeSinceMidnight(context)
+                val totalScreenTimeDb = 0L
                 
                 // Calculate total screen time (Clamped to elapsed time to avoid > 24h errors)
                 val calendar = Calendar.getInstance()

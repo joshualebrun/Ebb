@@ -70,7 +70,7 @@ object StrictLockUtils {
     }
     
     enum class FeatureType {
-        BLOCKLIST, BEDTIME, APP_LIMIT, GROUP_LIMIT, SCHEDULE, TAPASYA
+        BLOCKLIST, BEDTIME, APP_LIMIT, GROUP_LIMIT, SCHEDULE
     }
     
     /**
@@ -97,7 +97,7 @@ object StrictLockUtils {
             FeatureType.APP_LIMIT -> !strictData.isAppLimitLocked
             FeatureType.GROUP_LIMIT -> !strictData.isGroupLimitLocked
             FeatureType.SCHEDULE -> !strictData.isScheduleLocked
-            FeatureType.TAPASYA -> !strictData.isTapasyaLocked
+
         }
     }
 }

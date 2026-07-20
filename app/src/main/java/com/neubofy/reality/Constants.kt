@@ -100,12 +100,8 @@ class Constants {
         var isCalendarLocked: Boolean = true,
         
         // Grayscale Mode - REMOVED (requires ADB)
-        var isGrayscaleEnabled: Boolean = false,
+        var isGrayscaleEnabled: Boolean = false
         
-        // Lock Tapasya Settings (Start Time Edit)
-        var isTapasyaLocked: Boolean = true,
-        
-
     ) {
         companion object {
             const val MODE_NONE = "NONE"
@@ -135,8 +131,7 @@ class Constants {
         val packageName: String,
         var blockInFocus: Boolean = true,       // Custom Focus Mode
         var blockInAutoFocus: Boolean = true,   // Scheduled Auto Focus
-        var blockInBedtime: Boolean = true,     // Bedtime Mode
-        var blockInTapasya: Boolean = true      // Tapasya Mode
+        var blockInBedtime: Boolean = true     // Bedtime Mode
     )
     
     // Settings Page Learning - Device-specific class names

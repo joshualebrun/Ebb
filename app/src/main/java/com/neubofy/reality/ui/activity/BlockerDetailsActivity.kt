@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 import com.neubofy.reality.R
-import com.neubofy.reality.services.TapasyaManager
+
 import com.neubofy.reality.ui.base.BaseActivity
 import com.neubofy.reality.utils.*
 import java.text.SimpleDateFormat
@@ -77,10 +77,9 @@ class BlockerDetailsActivity : BaseActivity() {
         tvStatusDarkMode.text = if (isDarkMode) "Active" else "Inactive"
         tvStatusDarkMode.setTextColor(if (isDarkMode) Color.parseColor("#4CAF50") else Color.parseColor("#9E9E9E"))
 
-        val bedtimeData = savedPreferencesLoader.getBedtimeData()
-        val isBedtimeActive = isBedtimeActiveNow(bedtimeData)
-        tvStatusDimming.text = if (isBedtimeActive) "Active (Reality Sleep)" else "Inactive"
-        tvStatusDimming.setTextColor(if (isBedtimeActive) Color.parseColor("#4CAF50") else Color.parseColor("#9E9E9E"))
+        val isBedtimeActive = false
+        tvStatusDimming.text = "Inactive"
+        tvStatusDimming.setTextColor(Color.parseColor("#9E9E9E"))
 
         // 2. Load Active Blocker Sessions
         layoutActiveBlockers.removeAllViews()
@@ -92,34 +91,10 @@ class BlockerDetailsActivity : BaseActivity() {
 
         var hasAnyBlocker = false
 
-        // Tapasya Mode
-        val tapasyaState = TapasyaManager.getCurrentState(this)
-        if (tapasyaState.isSessionActive) {
-            addActiveBlockerCard(
-                title = "Tapasya Mode",
-                reason = "All target apps blocked to maximize focus & build discipline.",
-                endTimeStr = "Active until stopped",
-                colorHex = "#9C27B0" // Deep Purple
-            )
-            hasAnyBlocker = true
-        }
 
-        // Bedtime Mode
-        if (isBedtimeActive) {
-            val endMins = bedtimeData.endTimeInMins
-            val endStr = formatMinsToTime(endMins)
-            addActiveBlockerCard(
-                title = "Bedtime Mode",
-                reason = "Bedtime schedule is active. Sleeping hours protected.",
-                endTimeStr = "Ends at $endStr",
-                colorHex = "#E91E63" // Pink/Rose
-            )
-            hasAnyBlocker = true
-        }
-
-        // Manual Blocker (Omit duplicate if started by Tapasya)
+        // Manual Blocker
         val manualBlocker = savedPreferencesLoader.getFocusModeData()
-        if (manualBlocker.isTurnedOn && manualBlocker.endTime > now && !manualBlocker.isTapasyaTriggered) {
+        if (manualBlocker.isTurnedOn && manualBlocker.endTime > now) {
             val df = SimpleDateFormat("hh:mm a", Locale.getDefault())
             val endStr = df.format(Date(manualBlocker.endTime))
             addActiveBlockerCard(
@@ -288,19 +263,5 @@ class BlockerDetailsActivity : BaseActivity() {
         override fun getItemCount() = items.size
     }
 
-    private fun isBedtimeActiveNow(bedtime: com.neubofy.reality.Constants.BedtimeData): Boolean {
-        if (!bedtime.isEnabled) return false
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = SecureTimeProvider.currentTimeMillis(this)
-        val currentMins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
-        val start = bedtime.startTimeInMins
-        val end = bedtime.endTimeInMins
-        return if (start < end) {
-            currentMins in start until end
-        } else if (start > end) {
-            currentMins >= start || currentMins < end
-        } else {
-            false
-        }
-    }
+
 }

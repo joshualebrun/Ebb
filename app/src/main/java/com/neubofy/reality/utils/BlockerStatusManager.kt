@@ -67,14 +67,6 @@ class BlockerStatusManager(private val context: Context) {
             }
         }
         
-        // 3. Calendar Events
-        val events = db.calendarEventDao().getCurrentEvents(now)
-        if (events.isNotEmpty()) {
-            val event = events.first()
-            return BlockerStatus(true, BlockerType.CALENDAR, event.endTime, event.title)
-        }
-
-
         return BlockerStatus(false, BlockerType.NONE, 0, "")
     }
     

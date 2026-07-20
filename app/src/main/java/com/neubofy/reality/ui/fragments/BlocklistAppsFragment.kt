@@ -226,7 +226,6 @@ class BlocklistAppsFragment : Fragment() {
             holder.cbFocus.isChecked = config.blockInFocus
             holder.cbAutoFocus.isChecked = config.blockInAutoFocus
             holder.cbBedtime.isChecked = config.blockInBedtime
-            holder.cbTapasya.isChecked = config.blockInTapasya
             
             // Mode checkbox listeners - save immediately AND refresh service
             val modeChangeListener = object : android.widget.CompoundButton.OnCheckedChangeListener {
@@ -242,8 +241,7 @@ class BlocklistAppsFragment : Fragment() {
                             packageName = item.packageName,
                             blockInFocus = holder.cbFocus.isChecked,
                             blockInAutoFocus = holder.cbAutoFocus.isChecked,
-                            blockInBedtime = holder.cbBedtime.isChecked,
-                            blockInTapasya = holder.cbTapasya.isChecked
+                            blockInBedtime = holder.cbBedtime.isChecked
                         )
                         savedPreferencesLoader.updateBlockedAppConfig(updatedConfig)
                         onConfigChanged() // Trigger refresh

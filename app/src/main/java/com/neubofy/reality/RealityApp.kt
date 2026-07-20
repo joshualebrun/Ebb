@@ -20,21 +20,7 @@ class RealityApp: Application() {
     DynamicColors.applyToActivitiesIfAvailable(this)
     Thread.setDefaultUncaughtExceptionHandler(CrashLogger(this))
     
-    // Kickstart the Midnight Reset alarm
-    com.neubofy.reality.utils.SmartScheduleManager.scheduleNextTransition(this)
-    
-    // BlockCacheWorker periodic 3-min polling removed per user request
-    
-    // HeartbeatWorker completely removed. Replaced by Event-Driven Triggers (Screen-On + Reminders)
-    
-    // Start Firebase Analytics passively in the background so it never blocks startup
-    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-        try {
-            com.google.firebase.FirebaseApp.initializeApp(this@RealityApp)
-        } catch (e: Exception) {
-            // Fails silently if network is bad or blocked
-        }
-    }
+    // Firebase Analytics completely removed per user request
     
     super.onCreate()
     

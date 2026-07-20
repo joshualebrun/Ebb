@@ -7,7 +7,7 @@ import com.neubofy.reality.Constants
 import com.neubofy.reality.blockers.RealityBlocker
 import com.neubofy.reality.databinding.DialogFocusModeBinding
 import com.neubofy.reality.services.AppBlockerService
-import com.neubofy.reality.utils.NotificationTimerManager
+
 import com.neubofy.reality.utils.SavedPreferencesLoader
 import com.neubofy.reality.utils.SecureTimeProvider
 
@@ -47,7 +47,7 @@ class StartFocusMode(private val loader: SavedPreferencesLoader, private val onP
                 sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE)
                 android.widget.Toast.makeText(requireContext(), "Focus Started: ${totalMs / 60000} mins", android.widget.Toast.LENGTH_SHORT).show()
                 
-                NotificationTimerManager(requireContext()).startTimer(totalMs)
+
                 onPositiveButtonPressed()
             }
             .setNegativeButton("Cancel", null)

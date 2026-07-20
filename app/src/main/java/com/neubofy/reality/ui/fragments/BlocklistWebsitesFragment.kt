@@ -149,7 +149,6 @@ class BlocklistWebsitesFragment : Fragment() {
             holder.cbFocus.isChecked = config.blockInFocus
             holder.cbAutoFocus.isChecked = config.blockInAutoFocus
             holder.cbBedtime.isChecked = config.blockInBedtime
-            holder.cbTapasya.isChecked = config.blockInTapasya
             
             // Mode checkbox listeners
             val modeChangeListener = { _: android.widget.CompoundButton, _: Boolean ->
@@ -157,8 +156,7 @@ class BlocklistWebsitesFragment : Fragment() {
                     packageName = domain,
                     blockInFocus = holder.cbFocus.isChecked,
                     blockInAutoFocus = holder.cbAutoFocus.isChecked,
-                    blockInBedtime = holder.cbBedtime.isChecked,
-                    blockInTapasya = holder.cbTapasya.isChecked
+                    blockInBedtime = holder.cbBedtime.isChecked
                 )
                 prefs.updateBlockedAppConfig(updatedConfig)
                 onConfigChanged()

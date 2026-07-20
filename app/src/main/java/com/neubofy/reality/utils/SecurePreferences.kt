@@ -36,17 +36,6 @@ object SecurePreferences {
             val file = java.io.File(context.applicationContext.filesDir.parentFile?.absolutePath + "/shared_prefs/$securePrefName.xml")
             if (file.exists()) file.delete()
 
-            // Trigger async identity refresh to recover subscription/identity data
-            // Only if this is identity-related prefs being corrupted
-            if (securePrefName.contains("identity") || securePrefName.contains("features") || securePrefName.contains("pro")) {
-                try {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            IdentityManager.refreshIdentity(context.applicationContext)
-                        } catch (_: Exception) {}
-                    }
-                } catch (_: Exception) {}
-            }
 
             EncryptedSharedPreferences.create(
                 context.applicationContext,

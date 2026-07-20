@@ -205,11 +205,9 @@ object BlockCache {
                 // === STEP 1: Check if any blocking mode is active ===
                 val focusData = prefs.getFocusModeData()
                 val bedtimeData = prefs.getBedtimeData()
-                val calendarEvents = db.calendarEventDao().getCurrentEvents(now)
                 
                 val isFocusActiveRaw = focusData.isTurnedOn && focusData.endTime > now
-                val isTapasyaActive = isFocusActiveRaw && focusData.isTapasyaTriggered
-                val isManualFocusActive = isFocusActiveRaw && !focusData.isTapasyaTriggered
+                val isManualFocusActive = isFocusActiveRaw
                 
                 // AUTO-CLEANUP: If Focus Mode expired, reset the flag
                 if (focusData.isTurnedOn && focusData.endTime <= now) {
@@ -219,9 +217,9 @@ object BlockCache {
                 }
                 
                 val isBedtimeActive = bedtimeData.isEnabled && isBedtimeNow(bedtimeData, currentMins)
-                val isScheduleActive = calendarEvents.isNotEmpty()
+                val isScheduleActive = false
                 
-                isAnyBlockingModeActive = isFocusActiveRaw || isBedtimeActive || isScheduleActive
+                isAnyBlockingModeActive = isFocusActiveRaw || isBedtimeActive
                 isBedtimeCurrentlyActive = isBedtimeActive
                 
                 // === STEP 2: Add apps from blocklist if ANY mode is active ===
@@ -244,10 +242,6 @@ object BlockCache {
                             if (pkg.isNotEmpty()) {
                                 val config = configMap[pkg] ?: com.neubofy.reality.Constants.BlockedAppConfig(pkg)
                                 
-                                // Check all active modes independently
-                                if (isTapasyaActive && config.blockInTapasya) {
-                                    addToBox(newBox, pkg, "Tapasya Mode")
-                                }
                                 if (isManualFocusActive && config.blockInFocus) {
                                     addToBox(newBox, pkg, "Focus Mode")
                                 }
@@ -257,84 +251,6 @@ object BlockCache {
                                 if (isScheduleActive && config.blockInAutoFocus) {
                                     addToBox(newBox, pkg, "Scheduled Block")
                                 }
-                            }
-                        }
-                    }
-                }
-                
-                // === STEP 3: Add apps that exceeded usage limits ===
-                val usageMap = UsageUtils.getUsageSinceMidnight(context)
-                val appLimits = db.appLimitDao().getAllLimits()
-                
-                for (limit in appLimits) {
-                    newMonitoredApps.add(limit.packageName)
-                    val usedMs = usageMap[limit.packageName] ?: 0L
-                    val limitMs = limit.limitInMinutes * 60 * 1000L
-                    
-                    // Check if limit exceeded
-                    if (limitMs > 0 && usedMs >= limitMs) {
-                        addToBox(newBox, limit.packageName, "Daily Limit Reached (${limit.limitInMinutes}m)")
-                    }
-                    
-                    // Check if outside active hours
-                    if (limit.activePeriodsJson.isNotEmpty() && limit.activePeriodsJson.length > 5) {
-                        if (!isWithinActivePeriod(limit.activePeriodsJson, currentMins)) {
-                            addToBox(newBox, limit.packageName, "Outside Active Hours")
-                        }
-                    }
-                }
-                
-                // === STEP 4: Add apps from groups that exceeded limits ===
-                val appGroups = db.appGroupDao().getAllGroups()
-                
-                for (group in appGroups) {
-                    val packages = parsePackages(group.packageNamesJson)
-                    newMonitoredApps.addAll(packages)
-                    val limitMs = group.limitInMinutes * 60 * 1000L
-                    
-                    // Calculate total group usage
-                    var totalGroupUsage = 0L
-                    for (pkg in packages) {
-                        totalGroupUsage += usageMap[pkg] ?: 0L
-                    }
-                    
-                    // Check if group limit exceeded
-                    if (limitMs > 0 && totalGroupUsage >= limitMs) {
-                        val reason = "Group Limit Reached (${group.name})"
-                        packages.forEach { pkg -> addToBox(newBox, pkg, reason) }
-                    }
-                    
-                    // Check if outside group active hours
-                    if (group.activePeriodsJson.isNotEmpty() && group.activePeriodsJson.length > 5) {
-                        if (!isWithinActivePeriod(group.activePeriodsJson, currentMins)) {
-                            val reason = "Outside Group Hours (${group.name})"
-                            packages.forEach { pkg -> addToBox(newBox, pkg, reason) }
-                        }
-                    }
-                }
-                
-                // === STEP 5: Add distracting apps if daily screen time limit reached ===
-                val nightlyPrefs = context.getSharedPreferences("nightly_prefs", Context.MODE_PRIVATE)
-                val blockAfterLimit = nightlyPrefs.getBoolean("block_distracting_after_limit", true)
-                val limitMins = nightlyPrefs.getInt("screen_time_limit_minutes", 0)
-                
-                if (blockAfterLimit && limitMins > 0) {
-                    val distractionApps = focusData.selectedApps
-                    
-                    // Sum distracting app usage since midnight
-                    var totalDistractingUsageMs = 0L
-                    distractionApps.forEach { pkg ->
-                        if (pkg.isNotEmpty()) {
-                            totalDistractingUsageMs += usageMap[pkg] ?: 0L
-                        }
-                    }
-                    val totalDistractingMins = totalDistractingUsageMs / (60 * 1000L)
-                    
-                    if (totalDistractingMins >= limitMins) {
-                        val reason = "Distracting App Limit Reached (${totalDistractingMins}/${limitMins}m)"
-                        distractionApps.forEach { pkg ->
-                            if (pkg.isNotEmpty()) {
-                                addToBox(newBox, pkg, reason)
                             }
                         }
                     }
