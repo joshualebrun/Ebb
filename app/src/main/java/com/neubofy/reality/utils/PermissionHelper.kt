@@ -16,7 +16,7 @@ object PermissionHelper {
         if (checkAccessibility && !isAccessibilityServiceEnabled(activity, AppBlockerService::class.java)) {
             MaterialAlertDialogBuilder(activity)
                 .setTitle("Accessibility Required")
-                .setMessage("Reality needs Accessibility permission to block apps.\n\n1. Tap 'Enable'.\n2. Find 'Reality' or 'Installed Apps'.\n3. Turn ON 'Reality Blocker'.")
+                .setMessage("Ebb needs Accessibility permission to block apps.\n\n1. Tap 'Enable'.\n2. Find 'Ebb' or 'Installed Apps'.\n3. Turn ON 'Ebb Blocker'.")
                 .setPositiveButton("Enable") { _, _ ->
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                     activity.startActivity(intent)
@@ -26,24 +26,12 @@ object PermissionHelper {
             return
         }
 
-        // 2. Usage Access
-        if (!UsageUtils.hasUsageStatsPermission(activity)) {
-            MaterialAlertDialogBuilder(activity)
-                .setTitle("Usage Access Required")
-                .setMessage("To track time and enforce limits, Reality needs Usage Access.")
-                .setPositiveButton("Grant") { _, _ ->
-                     activity.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-            return
-        }
 
         // 3. Overlay Permission
         if (!Settings.canDrawOverlays(activity)) {
             MaterialAlertDialogBuilder(activity)
                 .setTitle("Overlay Permission Required")
-                .setMessage("To show the block screen, Reality needs 'Display over other apps' permission.")
+                .setMessage("To show the block screen, Ebb needs 'Display over other apps' permission.")
                 .setPositiveButton("Grant") { _, _ ->
                      activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:${activity.packageName}")))
                 }
