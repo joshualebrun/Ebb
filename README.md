@@ -1,8 +1,8 @@
 # Ebb 🌊
 
-![GitHub Release](https://img.shields.io/github/v/release/joshualebrun/Ebb?label=Latest%20Release)
-![GitHub Release (include pre-releases)](https://img.shields.io/github/v/release/joshualebrun/Ebb?include_prereleases&label=Pre-Release)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/joshualebrun/Ebb/total?label=Total%20Downloads)
+[![Latest Release](https://img.shields.io/github/v/release/joshualebrun/Ebb?label=Latest%20Release)](https://github.com/joshualebrun/Ebb/releases/latest)
+[![Pre-Release](https://img.shields.io/github/v/release/joshualebrun/Ebb?include_prereleases&label=Pre-Release)](https://github.com/joshualebrun/Ebb/releases)
+[![Total Downloads](https://img.shields.io/github/downloads/joshualebrun/Ebb/total?label=Total%20Downloads)](https://github.com/joshualebrun/Ebb/releases)
 
 **Ebb** is a focused, minimal, and uncompromising App & Website Blocker for Android. Built with intention, it strips away the noise so you can reclaim your time and focus.
 
